@@ -167,6 +167,8 @@ e-commerce-sales-analysis/
 ---
 
 ## Author
-
+Name :- Bhavesh suthar 
+git link :- https://github.com/bhavesh-gff
+Linkdein link :- https://www.linkedin.com/in/bhavesh-suthar-00761b315/
 Add your name, LinkedIn profile, and portfolio link here.
 
