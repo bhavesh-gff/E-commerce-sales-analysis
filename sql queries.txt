@@ -1,0 +1,126 @@
+---Revenue by City--
+
+WITH session_data AS (
+  SELECT
+    fullVisitorId,
+    visitId,
+    city,
+    MAX(totalTransactionRevenue) AS revenue_micros
+  FROM `data-to-insights.e-commerce.all_sessions`
+  GROUP BY
+    fullVisitorId,
+    visitId,
+    city
+)
+
+SELECT
+  city,
+  ROUND(SUM(revenue_micros) / 1000000, 2) AS total_revenue
+FROM session_data
+WHERE city IS NOT NULL
+  AND city != 'not available in demo dataset'
+GROUP BY city
+ORDER BY total_revenue DESC
+LIMIT 10;
+
+---Top 10 Products by Units Sold---
+
+SELECT
+  v2ProductName AS product_name,
+  SUM(productQuantity) AS units_sold
+FROM `data-to-insights.e-commerce.all_sessions`
+WHERE v2ProductName IS NOT NULL
+  AND productQuantity BETWEEN 1 AND 100
+GROUP BY v2ProductName
+ORDER BY units_sold DESC
+LIMIT 10;
+
+---Session Conversion Rate---
+
+SELECT
+  COUNT(DISTINCT CONCAT(
+    fullVisitorId,
+    '-',
+    CAST(visitId AS STRING)
+  )) AS total_sessions,
+
+  COUNT(DISTINCT IF(
+    transactions > 0,
+    CONCAT(
+      fullVisitorId,
+      '-',
+      CAST(visitId AS STRING)
+    ),
+    NULL
+  )) AS sessions_with_transaction,
+
+  ROUND(
+    COUNT(DISTINCT IF(
+      transactions > 0,
+      CONCAT(
+        fullVisitorId,
+        '-',
+        CAST(visitId AS STRING)
+      ),
+      NULL
+    ))
+    /
+    COUNT(DISTINCT CONCAT(
+      fullVisitorId,
+      '-',
+      CAST(visitId AS STRING)
+    )) * 100,
+    2
+  ) AS conversion_rate_percent
+
+FROM `data-to-insights.e-commerce.all_sessions`;
+
+
+---Traffic Channel Conversion Rate---
+
+
+SELECT
+  channelGrouping AS traffic_channel,
+
+  COUNT(DISTINCT CONCAT(
+    fullVisitorId,
+    '-',
+    CAST(visitId AS STRING)
+  )) AS total_sessions,
+
+  COUNT(DISTINCT IF(
+    transactions > 0,
+    CONCAT(
+      fullVisitorId,
+      '-',
+      CAST(visitId AS STRING)
+    ),
+    NULL
+  )) AS sessions_with_transaction,
+
+  ROUND(
+    COUNT(DISTINCT IF(
+      transactions > 0,
+      CONCAT(
+        fullVisitorId,
+        '-',
+        CAST(visitId AS STRING)
+      ),
+      NULL
+    ))
+    /
+    COUNT(DISTINCT CONCAT(
+      fullVisitorId,
+      '-',
+      CAST(visitId AS STRING)
+    )) * 100,
+    2
+  ) AS conversion_rate_percent
+
+FROM `data-to-insights.e-commerce.all_sessions`
+
+WHERE channelGrouping IS NOT NULL
+
+GROUP BY channelGrouping
+
+ORDER BY conversion_rate_percent DESC;
